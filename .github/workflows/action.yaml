@@ -1,0 +1,25 @@
+name: "Github Actions Show Reminder"
+
+on:
+  schedule:
+    - cron: '0 4 * * *'
+
+jobs:
+  bot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: "Install node"
+        uses: actions/setup-node@v1
+      - name: "Install npm dependencies"
+        run: npm install
+      - name: "Run code"
+        run: node src/index.js
+        env:
+          TVDB_API_KEY: ${{ secrets.TVDB_API_KEY }}
+          TVDB_API_USERNAME: ${{ secrets.TVDB_API_USERNAME }}
+          TVDB_USERKEY: ${{ secrets.TVDB_USERKEY }}
+          SHOW_IDS: ${{ secrets.SHOW_IDS }}
+          MAILGUN_API_KEY: ${{ secrets.MAILGUN_API_KEY }}
+          MAILGUN_DOMAIN: ${{ secrets.MAILGUN_DOMAIN }}
+          SEND_TO: ${{ secrets.SEND_TO }}
