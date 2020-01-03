@@ -220,7 +220,7 @@ const episodeAiringToday = (episodes) => {
 }
 
 async function doIt()  {
-  const showIds = process.env.SHOW_IDS;
+  const showIds = await fs.readFile('show-ids.txt', 'utf-8');
 
   const token = await getJSONToken();
 
@@ -271,9 +271,9 @@ const formatShowAsHtml = (details, show) => {
   const filename = show.filename;
 
   if (filename.length > 0) {
-    html += `<tr><td><img src="${filename}" /></td><td><h2>${show.episodeName}</h2></td></tr>`
+    html += `<tr><td><h2># ${airedEpisodeNumber}: ${show.episodeName}</h2></td><td><img src="${filename}" /></td></tr>`
   } else {
-    html += `<tr><td colspan="2"><h2>${show.episodeName}</h2></td></tr>`
+    html += `<tr><td colspan="2"><h2># ${airedEpisodeNumber}: ${show.episodeName}</h2></td></tr>`
   }
 
   html += `<tr><td>${show.overview}</td></tr>`
