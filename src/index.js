@@ -271,9 +271,9 @@ const formatShowAsHtml = (details, show) => {
   const filename = show.filename;
 
   if (filename.length > 0) {
-    html += `<tr><td><h2># ${airedEpisodeNumber}: ${show.episodeName}</h2></td><td><img src="${filename}" /></td></tr>`
+    html += `<tr><td><h2># ${show.airedEpisodeNumber}: ${show.episodeName}</h2></td><td><img src="${filename}" /></td></tr>`
   } else {
-    html += `<tr><td colspan="2"><h2># ${airedEpisodeNumber}: ${show.episodeName}</h2></td></tr>`
+    html += `<tr><td colspan="2"><h2># ${show.airedEpisodeNumber}: ${show.episodeName}</h2></td></tr>`
   }
 
   html += `<tr><td>${show.overview}</td></tr>`
