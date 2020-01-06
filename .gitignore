@@ -13,6 +13,7 @@
 
 # misc
 .env
+shows-lookup.txt
 .env.local
 .env.development.local
 .env.test.local
