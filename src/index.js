@@ -140,25 +140,37 @@ const getFullImageUrl = (url) => {
     },
 */
 const getSeriesDetail = async (token, seriesId) => {
-  const response = await axios({
-    method: 'GET',
-    url: `${tvDbBaseUrl}/series/${seriesId}`,
-    headers: getAuthHeader(token),
-  });
-
-  return patchSeason(response.data.data);
+	try {
+		const response = await axios({
+			method: 'GET',
+			url: `${tvDbBaseUrl}/series/${seriesId}`,
+			headers: getAuthHeader(token),
+		});
+	
+		return patchSeason(response.data.data);
+	} catch (e) {
+		console.error('Exception in getSeriesDetail', e);
+		
+		return null;
+	}
 }
 
 const getNewestSeason = async (token, seriesId) => {
-  const response = await axios({
-    method: 'GET',
-    url: `${tvDbBaseUrl}/series/${seriesId}`,
-    headers: getAuthHeader(token),
-  });
-
-  // console.log(response.data);
-
-  return parseInt(response.data.data.season);
+	try {
+		const response = await axios({
+			method: 'GET',
+			url: `${tvDbBaseUrl}/series/${seriesId}`,
+			headers: getAuthHeader(token),
+		});
+	
+		// console.log(response.data);
+	
+		return parseInt(response.data.data.season);
+	} catch (e) {
+		console.error('Exception in getNewestSeason', e);
+		
+		return -1;
+	}
 }
 
 const getSerieEpisodes = async (token, seriesId, season) => {
@@ -166,16 +178,24 @@ const getSerieEpisodes = async (token, seriesId, season) => {
 
   let next = 1;
 
-  while(next !== null) {
-    const response = await getSerieEpisodesPage(token, seriesId, season, next);
-
-    next = response.links.next;
-    episodes = episodes.concat(response.data);
-  }
-
-  episodes.map(e => patchEpisode(e));
-
-  return episodes;
+	try {
+		while(next !== null) {
+			const response = await getSerieEpisodesPage(token, seriesId, season, next);
+	
+			if(response !== null) {
+				next = response.links.next;
+				episodes = episodes.concat(response.data);
+			}
+		}
+	
+		episodes.map(e => patchEpisode(e));
+	
+		return episodes;
+	} catch (e) {
+		console.error('Exception in getSerieEpisodes', e);
+		
+		return null;
+	}
 }
 
 const patchEpisode = (episode) => {
@@ -203,13 +223,19 @@ const getSerieEpisodesPage = async (token, seriesId, season, page) => {
   // console.log('getting page #', page);
   // console.log('url', `${tvDbBaseUrl}/series/${seriesId}/episodes/query?airedSeason=${season}&page=${page}`)
 
-  const response = await axios({
-    method: 'GET',
-    url: `${tvDbBaseUrl}/series/${seriesId}/episodes/query?airedSeason=${season}&page=${page}`,
-    headers: getAuthHeader(token),
-  });
+	try {
+		const response = await axios({
+			method: 'GET',
+			url: `${tvDbBaseUrl}/series/${seriesId}/episodes/query?airedSeason=${season}&page=${page}`,
+			headers: getAuthHeader(token),
+		});	
 
-  return response.data;
+		return response.data;
+	} catch (e) {
+		console.error('Exception in getSerieEpisodesPage', e);
+		
+		return null;
+	}
 }
 
 const episodeAiringToday = (episodes) => {
@@ -230,27 +256,34 @@ async function doIt()  {
     try {
       const details = await getSeriesDetail(token, seriesId);
       // console.log(details);
-    
-      if(details.status !== 'Ended') {
-        lastSeason = await getNewestSeason(token, seriesId);
-        // console.log('season', lastSeason);
 
-        const episodes = await getSerieEpisodes(token, seriesId, lastSeason);
-        // console.log('# episodes: ', episodes.length)
-      
-        const airedToday = episodeAiringToday(episodes);
-      
-        if(airedToday && airedToday.length > 0) {
-          console.log('Bingo', airedToday[0]);
-      
-          html += formatShowAsHtml(details, airedToday[0]);
-        } else {
-          // console.log('last episode', episodes[episodes.length -1]);
-          // console.log('not today', episodes)
-        }
-      } else {
-        // console.warn(`Bad status "${details.status}" for show with id ${seriesId}`);
-      }
+			if(details !== null) {
+				if(details.status !== 'Ended') {
+					lastSeason = await getNewestSeason(token, seriesId);
+					// console.log('season', lastSeason);
+	
+					if(lastSeason > -1) {
+						const episodes = await getSerieEpisodes(token, seriesId, lastSeason);
+
+						if(episodes !== null) {
+							// console.log('# episodes: ', episodes.length)
+						
+							const airedToday = episodeAiringToday(episodes);
+						
+							if(airedToday && airedToday.length > 0) {
+								console.log('Bingo', airedToday[0]);
+						
+								html += formatShowAsHtml(details, airedToday[0]);
+							} else {
+								// console.log('last episode', episodes[episodes.length -1]);
+								// console.log('not today', episodes)
+							}
+						}
+					}
+				} else {
+					// console.warn(`Bad status "${details.status}" for show with id ${seriesId}`);
+				}
+			}
     } catch(e) {
       console.error(`Exception handling show with id "${seriesId}"`, e);
     }
