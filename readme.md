@@ -1,8 +1,8 @@
+[![Github Actions Show Reminder](https://github.com/JesperHalvorsen/node-show-reminder/actions/workflows/action.yaml/badge.svg)](https://github.com/JesperHalvorsen/node-show-reminder/actions/workflows/action.yaml)
+
 # Links
 
-Search for show: https://api.thetvdb.com/swagger#!/Search/get_search_series
-
-Eller bare på web: https://thetvdb.com/search?query=
+Search for show: http://api.tvmaze.com/search/shows?q=storyville
 
 # TO DO
 
