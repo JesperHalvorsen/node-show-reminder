@@ -4,69 +4,14 @@ const fs = require('fs-extra');
 const path = require('path');
 const jwt = require('jsonwebtoken');
 const moment = require('moment');
+const Bottleneck = require("bottleneck/es5");
 
 var mailgun = require('mailgun-js')({apiKey: process.env.MAILGUN_API_KEY, domain: process.env.MAILGUN_DOMAIN});
 
-const tvDbApiKey = process.env.TVDB_API_KEY;
-const tvDbUserKey = process.env.TVDB_USERKEY;
-const tokenFilename = path.join(__dirname, '..', 'token.txt');
-
-const tvDbBaseUrl = 'https://api.thetvdb.com';
+const tvMazeBaseUrl = `http://api.tvmaze.com`;
 
 // console.log({tvDbApiKey, tvDbUserKey});
 
-const getJSONToken = async () => {
-  let token = await loadTokenFromFile();
-
-  if (token) {
-    return token;
-  }
-
-  console.log('not cached token - or it is expired...');
-
-	try {
-		const response = await axios({
-			method: 'POST',
-			url: `${tvDbBaseUrl}/login`,
-			data: {
-				apikey: tvDbApiKey,
-				userkey: tvDbUserKey,
-			}
-		});
-	
-		token = response.data.token;
-		console.log('Got new token', token);
-	
-		await fs.writeFile(tokenFilename, token);
-	
-		return token;
-	} catch (e) {
-		console.error('Could not request new token', e);
-
-		return null;
-	}
-}
-
-const loadTokenFromFile = async () => {
-  console.log('loadTokenFromFile')
-  if (fs.existsSync(tokenFilename)) {
-    const token = await fs.readFile(tokenFilename, 'utf-8');
-
-    const decoded = jwt.decode(token);
-
-    if (Date.now() >= decoded.exp * 1000) {
-      return undefined;
-    }
-
-    return token;
-  }
-
-  return undefined;
-}
-
-const getAuthHeader = (token) => {
-  return {'Authorization': "Bearer " + token};
-}
 
 /*
 {
@@ -102,9 +47,9 @@ const getAuthHeader = (token) => {
 }
 */
 
-const getFullImageUrl = (url) => {
-  return url.trim().length > 0 ? `https://artworks.thetvdb.com/banners/${url}` : '';
-}
+// const getFullImageUrl = (url) => {
+//   return url.trim().length > 0 ? `https://artworks.thetvdb.com/banners/${url}` : '';
+// }
 
 /*
 {
@@ -147,187 +92,273 @@ const getFullImageUrl = (url) => {
       isMovie: 0
     },
 */
-const getSeriesDetail = async (token, seriesId) => {
+// const getSeriesDetail = async (token, seriesId) => {
+// 	try {
+// 		const response = await axios({
+// 			method: 'GET',
+// 			url: `${tvDbBaseUrl}/series/${seriesId}`,
+// 			headers: getAuthHeader(token),
+// 		});
+
+// 		return patchSeason(response.data.data);
+// 	} catch (e) {
+// 		console.error('Exception in getSeriesDetail'); //, e);
+
+// 		return null;
+// 	}
+// }
+
+
+
+// const getNewestSeason = async (token, seriesId) => {
+// 	try {
+// 		const response = await axios({
+// 			method: 'GET',
+// 			url: `${tvDbBaseUrl}/series/${seriesId}`,
+// 			headers: getAuthHeader(token),
+// 		});
+
+// 		// console.log(response.data);
+
+// 		return parseInt(response.data.data.season);
+// 	} catch (e) {
+// 		console.error('Exception in getNewestSeason'); //, e);
+
+// 		return -1;
+// 	}
+// }
+
+// const getSerieEpisodes = async (token, seriesId, season) => {
+//   let episodes = [];
+
+//   let next = 1;
+
+// 	try {
+// 		while(next !== null) {
+// 			const response = await getSerieEpisodesPage(token, seriesId, season, next);
+
+// 			if(response !== null) {
+// 				next = response.links.next;
+// 				episodes = episodes.concat(response.data);
+// 			}
+// 		}
+
+// 		episodes.map(e => patchEpisode(e));
+
+// 		return episodes;
+// 	} catch (e) {
+// 		console.error('Exception in getSerieEpisodes'); //, e);
+
+// 		return null;
+// 	}
+// }
+
+// const patchEpisode = (episode) => {
+//   episode.filename = getFullImageUrl(episode.filename);
+//   episode.firstAired = moment(episode.firstAired);
+//   episode.lastUpdated = parseUnixTimeStamp(episode.lastUpdated);
+
+//   return episode;
+// }
+
+// const patchSeason = (season) => {
+//   season.poster = getFullImageUrl(season.poster);
+//   season.banner = getFullImageUrl(season.banner);
+//   season.fanart = getFullImageUrl(season.fanart);
+//   season.lastUpdated = parseUnixTimeStamp(season.lastUpdated);
+
+//   return season;
+// }
+
+// const parseUnixTimeStamp = (timestamp) => {
+//   return new Date(timestamp * 1000);
+// }
+
+// const getSerieEpisodesPage = async (token, seriesId, season, page) => {
+//   // console.log('getting page #', page);
+//   // console.log('url', `${tvDbBaseUrl}/series/${seriesId}/episodes/query?airedSeason=${season}&page=${page}`)
+
+// 	try {
+// 		const response = await axios({
+// 			method: 'GET',
+// 			url: `${tvDbBaseUrl}/series/${seriesId}/episodes/query?airedSeason=${season}&page=${page}`,
+// 			headers: getAuthHeader(token),
+// 		});
+
+// 		return response.data;
+// 	} catch (e) {
+// 		console.error('Exception in getSerieEpisodesPage'); //, e);
+
+// 		return null;
+// 	}
+// }
+
+// const episodeAiringToday = (episodes) => {
+//   let today = moment();
+//   let yesterday = today.subtract(1, 'days');
+
+//   return episodes.filter(e => e.firstAired.isSame(today, 'day') || e.firstAired.isSame(yesterday, 'day'));
+// }
+
+const getAiringToDay = async (id, date) => {
+	// http://api.tvmaze.com/shows/7186/episodesbydate?date=2021-04-09
+	// http://api.tvmaze.com/shows/329/episodesbydate?date=2021-04-09
+	// console.log('url is', `${tvMazeBaseUrl}/shows/${id}/episodesbydate?date=${date}`);
 	try {
 		const response = await axios({
 			method: 'GET',
-			url: `${tvDbBaseUrl}/series/${seriesId}`,
-			headers: getAuthHeader(token),
+			// /shows/329/episodesbydate?date=2021-04-09
+			url: `${tvMazeBaseUrl}/shows/${id}/episodesbydate?date=${date}`,
 		});
-	
-		return patchSeason(response.data.data);
+
+		return response.data[0];
 	} catch (e) {
-		console.error('Exception in getSeriesDetail'); //, e);
-		
-		return null;
-	}
-}
-
-const getNewestSeason = async (token, seriesId) => {
-	try {
-		const response = await axios({
-			method: 'GET',
-			url: `${tvDbBaseUrl}/series/${seriesId}`,
-			headers: getAuthHeader(token),
-		});
-	
-		// console.log(response.data);
-	
-		return parseInt(response.data.data.season);
-	} catch (e) {
-		console.error('Exception in getNewestSeason'); //, e);
-		
-		return -1;
-	}
-}
-
-const getSerieEpisodes = async (token, seriesId, season) => {
-  let episodes = [];
-
-  let next = 1;
-
-	try {
-		while(next !== null) {
-			const response = await getSerieEpisodesPage(token, seriesId, season, next);
-	
-			if(response !== null) {
-				next = response.links.next;
-				episodes = episodes.concat(response.data);
-			}
+		if(e.code !== undefined && e.code !== 404) {
+			console.error('Exception in getAiringToDay'); //, e);
+		} else {
+			// console.log('no panic, just no episodes for today 😊');
 		}
-	
-		episodes.map(e => patchEpisode(e));
-	
-		return episodes;
-	} catch (e) {
-		console.error('Exception in getSerieEpisodes'); //, e);
-		
-		return null;
+
+		return undefined;
 	}
 }
 
-const patchEpisode = (episode) => {
-  episode.filename = getFullImageUrl(episode.filename);
-  episode.firstAired = moment(episode.firstAired);
-  episode.lastUpdated = parseUnixTimeStamp(episode.lastUpdated);
-
-  return episode;
-}
-
-const patchSeason = (season) => {
-  season.poster = getFullImageUrl(season.poster);
-  season.banner = getFullImageUrl(season.banner);
-  season.fanart = getFullImageUrl(season.fanart);
-  season.lastUpdated = parseUnixTimeStamp(season.lastUpdated);
-
-  return season;
-}
-
-const parseUnixTimeStamp = (timestamp) => {
-  return new Date(timestamp * 1000);
-}
-
-const getSerieEpisodesPage = async (token, seriesId, season, page) => {
-  // console.log('getting page #', page);
-  // console.log('url', `${tvDbBaseUrl}/series/${seriesId}/episodes/query?airedSeason=${season}&page=${page}`)
-
+const getSeriesDetails = async (id) => {
 	try {
 		const response = await axios({
 			method: 'GET',
-			url: `${tvDbBaseUrl}/series/${seriesId}/episodes/query?airedSeason=${season}&page=${page}`,
-			headers: getAuthHeader(token),
-		});	
+			url: `${tvMazeBaseUrl}/shows/${id}`,
+		});
 
-		return response.data;
+		return {
+			name: response.data.name,
+			image: response.data.image.medium,
+		}
+		// let html = `<h1>${response.data.name}</h1>`;
+		// html += `<img src='${response.data.image.medium}' />`
+		// return html;
 	} catch (e) {
-		console.error('Exception in getSerieEpisodesPage'); //, e);
-		
-		return null;
+		console.error('Exception in getSeriesDetails'); //, e);
+
+		return undefined;
 	}
 }
 
-const episodeAiringToday = (episodes) => {
-  let today = moment();
-  let yesterday = today.subtract(1, 'days');
-  
-  return episodes.filter(e => e.firstAired.isSame(today, 'day') || e.firstAired.isSame(yesterday, 'day'));
+const formatEpisodeAsHtml = async (seriesId, episodeData) => {
+	let seriesDetails = await getSeriesDetails(seriesId);
+
+	let html = '';
+
+	if(seriesDetails !== undefined) {
+		html = `<table><tr><td><h1 width="50%">${seriesDetails.name}</h1></td><td width="50%"><img src="${seriesDetails.image}" /></td></tr>`;
+		html += `<tr><td colspan='2'><h2>#${episodeData.number}: ${episodeData.summary}</h2></td></tr>`
+		html += '</table>';
+	} else {
+		html = `There is new episode for ${seriesId}: ${episodeData}, but could not get series details???`;
+	}
+
+	return html;
 }
 
 async function doIt()  {
   const showIds = await fs.readFile('show-ids.txt', 'utf-8');
 
-  const token = await getJSONToken();
-
-	if(token === null) {
-		console.error('Cannot handle shows without a token. Exiting...');
-		return;
-	}
+	const limiter = new Bottleneck({
+    maxConcurrent: 1,
+		minTime: 333
+  });
 
   let html = '';
+	const today = moment();
+  const yesterday = today.subtract(1, 'days');
+	const dateFormat = 'YYYY-MM-DD';
 
-  await Promise.all(showIds.split(',').map(async (seriesId) => {
-    try {
-      const details = await getSeriesDetail(token, seriesId);
-      // console.log(details);
+	await Promise.all(showIds.split(',').map(async (seriesId) => {
+		const result = await limiter.schedule(async () => {
+			let airingToday = await getAiringToDay(seriesId, today.format(dateFormat));
 
-			if(details !== null) {
-				if(details.status !== 'Ended') {
-					lastSeason = await getNewestSeason(token, seriesId);
-					// console.log('season', lastSeason);
-	
-					if(lastSeason > -1) {
-						const episodes = await getSerieEpisodes(token, seriesId, lastSeason);
-
-						if(episodes !== null) {
-							// console.log('# episodes: ', episodes.length)
-						
-							const airedToday = episodeAiringToday(episodes);
-						
-							if(airedToday && airedToday.length > 0) {
-								console.log('Bingo', airedToday[0]);
-						
-								html += formatShowAsHtml(details, airedToday[0]);
-							} else {
-								// console.log('last episode', episodes[episodes.length -1]);
-								// console.log('not today', episodes)
-							}
-						}
-					}
-				} else {
-					// console.warn(`Bad status "${details.status}" for show with id ${seriesId}`);
-				}
+			if(airingToday !== undefined) {
+				return await formatEpisodeAsHtml(seriesId, airingToday);
 			}
-    } catch(e) {
-      console.error(`Exception handling show with id "${seriesId}"`); //, e);
-    }
-  }));
+
+			airingToday = await getAiringToDay(seriesId, yesterday.format(dateFormat));
+
+			if(airingToday !== undefined) {
+				return await formatEpisodeAsHtml(seriesId, airingToday);
+			}
+
+			return '';
+
+		});
+
+		html += result;
+	}));
+
+
+  // await Promise.all(showIds.split(',').map(async (seriesId) => {
+  //   try {
+  //     const details = await getSeriesDetail(token, seriesId);
+  //     // console.log(details);
+
+	// 		if(details !== null) {
+	// 			if(details.status !== 'Ended') {
+	// 				lastSeason = await getNewestSeason(token, seriesId);
+	// 				// console.log('season', lastSeason);
+
+	// 				if(lastSeason > -1) {
+	// 					const episodes = await getSerieEpisodes(token, seriesId, lastSeason);
+
+	// 					if(episodes !== null) {
+	// 						// console.log('# episodes: ', episodes.length)
+
+	// 						const airedToday = episodeAiringToday(episodes);
+
+	// 						if(airedToday && airedToday.length > 0) {
+	// 							console.log('Bingo', airedToday[0]);
+
+	// 							html += formatShowAsHtml(details, airedToday[0]);
+	// 						} else {
+	// 							// console.log('last episode', episodes[episodes.length -1]);
+	// 							// console.log('not today', episodes)
+	// 						}
+	// 					}
+	// 				}
+	// 			} else {
+	// 				// console.warn(`Bad status "${details.status}" for show with id ${seriesId}`);
+	// 			}
+	// 		}
+  //   } catch(e) {
+  //     console.error(`Exception handling show with id "${seriesId}"`); //, e);
+  //   }
+  // }));
 
   if (html.length > 0) {
     html = '<div>' + html + '</div>';
-    console.log('Sending email with shows airing today')
+    // console.log('Sending email with shows airing today')
     await emailResult(html);
+		// console.log(html);
   } else {
     console.log('No shows airing today')
   }
 }
 
-const formatShowAsHtml = (details, show) => {
-  let html = `<table><tr><td><h1>${details.seriesName}</h1><img src="${details.banner}" /></td></tr>`
-      
-  const filename = show.filename;
+// const formatShowAsHtml = (details, show) => {
+//   let html = `<table><tr><td><h1>${details.seriesName}</h1><img src="${details.banner}" /></td></tr>`
 
-  if (filename.length > 0) {
-    html += `<tr><td width="50%"><h2># ${show.airedEpisodeNumber}: ${show.episodeName}</h2></td><td width="50%"><img width="100%" src="${filename}" /></td></tr>`
-  } else {
-    html += `<tr><td colspan="2"><h2># ${show.airedEpisodeNumber}: ${show.episodeName}</h2></td></tr>`
-  }
+//   const filename = show.filename;
 
-  html += `<tr><td>${show.overview}</td></tr>`
-  
-  html += '</table>'
+//   if (filename.length > 0) {
+//     html += `<tr><td width="50%"><h2># ${show.airedEpisodeNumber}: ${show.episodeName}</h2></td><td width="50%"><img width="100%" src="${filename}" /></td></tr>`
+//   } else {
+//     html += `<tr><td colspan="2"><h2># ${show.airedEpisodeNumber}: ${show.episodeName}</h2></td></tr>`
+//   }
 
-  return html;
-}
+//   html += `<tr><td>${show.overview}</td></tr>`
+
+//   html += '</table>'
+
+//   return html;
+// }
 
 const emailResult = async (body) => {
   const data = {
