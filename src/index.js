@@ -23,20 +23,28 @@ const getJSONToken = async () => {
   }
 
   console.log('not cached token - or it is expired...');
-  const response = await axios({
-    method: 'POST',
-    url: `${tvDbBaseUrl}/login`,
-    data: {
-      apikey: tvDbApiKey,
-      userkey: tvDbUserKey,
-    }
-  });
 
-  token = response.data.token;
+	try {
+		const response = await axios({
+			method: 'POST',
+			url: `${tvDbBaseUrl}/login`,
+			data: {
+				apikey: tvDbApiKey,
+				userkey: tvDbUserKey,
+			}
+		});
+	
+		token = response.data.token;
+		console.log('Got new token', token);
+	
+		await fs.writeFile(tokenFilename, token);
+	
+		return token;
+	} catch (e) {
+		console.error('Could not request new token', e);
 
-  await fs.writeFile(tokenFilename, token);
-
-  return token;
+		return null;
+	}
 }
 
 const loadTokenFromFile = async () => {
@@ -149,7 +157,7 @@ const getSeriesDetail = async (token, seriesId) => {
 	
 		return patchSeason(response.data.data);
 	} catch (e) {
-		console.error('Exception in getSeriesDetail', e);
+		console.error('Exception in getSeriesDetail'); //, e);
 		
 		return null;
 	}
@@ -167,7 +175,7 @@ const getNewestSeason = async (token, seriesId) => {
 	
 		return parseInt(response.data.data.season);
 	} catch (e) {
-		console.error('Exception in getNewestSeason', e);
+		console.error('Exception in getNewestSeason'); //, e);
 		
 		return -1;
 	}
@@ -192,7 +200,7 @@ const getSerieEpisodes = async (token, seriesId, season) => {
 	
 		return episodes;
 	} catch (e) {
-		console.error('Exception in getSerieEpisodes', e);
+		console.error('Exception in getSerieEpisodes'); //, e);
 		
 		return null;
 	}
@@ -232,7 +240,7 @@ const getSerieEpisodesPage = async (token, seriesId, season, page) => {
 
 		return response.data;
 	} catch (e) {
-		console.error('Exception in getSerieEpisodesPage', e);
+		console.error('Exception in getSerieEpisodesPage'); //, e);
 		
 		return null;
 	}
@@ -249,6 +257,11 @@ async function doIt()  {
   const showIds = await fs.readFile('show-ids.txt', 'utf-8');
 
   const token = await getJSONToken();
+
+	if(token === null) {
+		console.error('Cannot handle shows without a token. Exiting...');
+		return;
+	}
 
   let html = '';
 
@@ -285,7 +298,7 @@ async function doIt()  {
 				}
 			}
     } catch(e) {
-      console.error(`Exception handling show with id "${seriesId}"`, e);
+      console.error(`Exception handling show with id "${seriesId}"`); //, e);
     }
   }));
 
