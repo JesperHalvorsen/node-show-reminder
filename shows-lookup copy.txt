@@ -38,3 +38,6 @@
 253573  American Gods
 51394		The.White.Lotus
 891			Hard Knocks
+35951		Foundation
+3606		Billions
+42668		Y The Last Man
