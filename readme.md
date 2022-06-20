@@ -2,8 +2,8 @@
 
 # Links
 
-Search for show: http://api.tvmaze.com/search/shows?
-q=mare of easttown
+Search for show: http://api.tvmaze.com/search/shows?q=
+mare of easttown
 # TO DO
 
 [x] Move list of shows from secret to text file, so it is easier to update it
