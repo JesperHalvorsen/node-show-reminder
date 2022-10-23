@@ -2,8 +2,9 @@
 
 # Links
 
-Search for show: http://api.tvmaze.com/search/shows?q=
+Search for show: http://api.tvmaze.com/search/shows?q=The Peripheral
 mare of easttown
+
 # TO DO
 
 [x] Move list of shows from secret to text file, so it is easier to update it
