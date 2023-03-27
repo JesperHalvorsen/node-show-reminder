@@ -2,7 +2,7 @@ name: "Github Actions Show Reminder"
 
 on:
   schedule:
-    - cron: '0 2 * * *'
+    - cron: '0 5 * * *'
 
 jobs:
   bot:
