@@ -8,7 +8,6 @@
 278518  Last Week Tonight with John Oliver
 72231   Real Time with Bill Maher
 366090  Treadstone
-349659  Mayans M.C.
 365403  Better Call Saul
 317728  The Deuce
 361160  Dracula 
@@ -49,3 +48,5 @@
 46562		Last of us
 44458		Ted Lasso
 56088		Liaison
+50415		Special Ops: Lioness
+31764		Hijacked
