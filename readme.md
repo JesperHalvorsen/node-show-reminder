@@ -13,7 +13,7 @@ mare of easttown
 
 [ ] Something needs to change, to keep the workflow running 😊
 
-Just something...
+Just something... 
 
 ## TV Maze
 
