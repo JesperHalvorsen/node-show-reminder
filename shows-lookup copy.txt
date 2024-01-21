@@ -50,3 +50,5 @@
 56088		Liaison
 50415		Special Ops: Lioness
 31764		Hijacked
+5				True Detective
+59416		Death and Other Details
