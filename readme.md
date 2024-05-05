@@ -1,7 +1,6 @@
 [![Github Actions Show Reminder](https://github.com/JesperHalvorsen/node-show-reminder/actions/workflows/action.yaml/badge.svg)](https://github.com/JesperHalvorsen/node-show-reminder/actions/workflows/action.yaml)
 
-# Links
-
+# Links, bla bla bla
 
 Search for show: http://api.tvmaze.com/search/shows?q=Rabbit Hole
 mare of easttown
