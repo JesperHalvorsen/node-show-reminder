@@ -10,6 +10,7 @@ var mailgun = require('mailgun-js')({apiKey: process.env.MAILGUN_API_KEY, domain
 
 const tvMazeBaseUrl = `http://api.tvmaze.com`;
 
+
 // console.log({tvDbApiKey, tvDbUserKey});
 
 /*
