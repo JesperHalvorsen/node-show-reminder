@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const moment = require('moment');
 const Bottleneck = require("bottleneck/es5");
 
-var mailgun = require('mailgun-js')({apiKey: process.env.MAILGUN_API_KEY, domain: process.env.MAILGUN_DOMAIN});
+// var mailgun = require('mailgun-js')({apiKey: process.env.MAILGUN_API_KEY, domain: process.env.MAILGUN_DOMAIN});
 
 const tvMazeBaseUrl = `http://api.tvmaze.com`;
 
@@ -262,6 +262,14 @@ const formatEpisodeAsHtml = async (seriesId, episodeData) => {
 }
 
 async function doIt()  {
+	const TelegramBot = require('node-telegram-bot-api');
+const token = '7532748222:AAGYV2bNx_uiOitnNp40enGeyKgbfmlFWA4';
+const bot = new TelegramBot(token, {polling: false});
+
+await bot.sendMessage('6884382841', 'Hejsa <table><tr><td><h1 width="50%"> efter html');
+
+return;
+
   const showIds = await fs.readFile('show-ids.txt', 'utf-8');
 
 	const limiter = new Bottleneck({
