@@ -251,6 +251,17 @@ const formatEpisodeAsHtml = async (seriesId, episodeData) => {
 	let html = '';
 
 	if(seriesDetails !== undefined) {
+		html += `${seriesDetails.name}\r\n`;
+		html += `------------------------\r\n`;
+		html += `#${episodeData.number}: ${episodeData.summary.trim()}\r\n`
+	} else {
+		html = `There is new episode for ${seriesId}: ${episodeData}, but could not get series details???\r\n`;
+	}
+
+	return html;
+
+
+	if(seriesDetails !== undefined) {
 		html = `<table><tr><td><h1 width="50%">${seriesDetails.name}</h1></td><td width="50%"><img src="${seriesDetails.image}" /></td></tr>`;
 		html += `<tr><td colspan='2'><h2>#${episodeData.number}: ${episodeData.summary}</h2></td></tr>`
 		html += '</table>';
@@ -262,13 +273,6 @@ const formatEpisodeAsHtml = async (seriesId, episodeData) => {
 }
 
 async function doIt()  {
-	const TelegramBot = require('node-telegram-bot-api');
-const token = '7532748222:AAGYV2bNx_uiOitnNp40enGeyKgbfmlFWA4';
-const bot = new TelegramBot(token, {polling: false});
-
-await bot.sendMessage('6884382841', 'Hejsa <table><tr><td><h1 width="50%"> efter html');
-
-return;
 
   const showIds = await fs.readFile('show-ids.txt', 'utf-8');
 
@@ -287,6 +291,8 @@ return;
 			let airingToday = await getAiringToDay(seriesId, today.format(dateFormat));
 
 			if(airingToday !== undefined) {
+				// console.log({airingToday})
+				
 				return await formatEpisodeAsHtml(seriesId, airingToday);
 			}
 
@@ -300,7 +306,7 @@ return;
 
 		});
 
-		html += result;
+		html += result + '\r\n';
 	}));
 
 
@@ -342,9 +348,14 @@ return;
   // }));
 
   if (html.length > 0) {
-    html = '<div>' + html + '</div>';
+    // html = '<div>' + html + '</div>';
     // console.log('Sending email with shows airing today')
-    await emailResult(html);
+	const TelegramBot = require('node-telegram-bot-api');
+const token = '7532748222:AAGYV2bNx_uiOitnNp40enGeyKgbfmlFWA4';
+const bot = new TelegramBot(token, {polling: false});
+
+await bot.sendMessage('6884382841', html + '\r\n');
+// await emailResult(html);
 		// console.log(html);
   } else {
     console.log('No shows airing today')
