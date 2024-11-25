@@ -114,7 +114,7 @@ async function doIt()  {
 
 		});
 
-		html += result + '\r\n';
+		// html += result + '\r\n';
 	}));
 
 	html = html.trim();
