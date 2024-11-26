@@ -56,13 +56,14 @@ const getSeriesDetails = async (id) => {
 
 const formatEpisodeAsHtml = async (seriesId, episodeData) => {
 	let seriesDetails = await getSeriesDetails(seriesId);
+	let summay = episodeData.summary ?? '';
 
 	let html = '';
 
 	if(seriesDetails !== undefined) {
 		html += `${seriesDetails.name}\r\n`;
 		html += `------------------------\r\n`;
-		html += `#${episodeData.number}: ${episodeData.summary.trim()}\r\n`
+		html += `#${episodeData.number}: ${summay.trim()}\r\n`
 	} else {
 		html = `There is new episode for ${seriesId}: ${episodeData}, but could not get series details???\r\n`;
 	}
