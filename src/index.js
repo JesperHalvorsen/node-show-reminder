@@ -56,7 +56,11 @@ const getSeriesDetails = async (id) => {
 
 const formatEpisodeAsHtml = async (seriesId, episodeData) => {
 	let seriesDetails = await getSeriesDetails(seriesId);
-	let summay = episodeData.summary ?? '';
+	let summay = "";
+	
+	if(episodeData.summary) {
+		summy = episodeData.summary;
+	} 
 
 	let html = '';
 
