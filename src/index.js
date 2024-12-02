@@ -8,6 +8,10 @@ const Bottleneck = require("bottleneck/es5");
 
 // var mailgun = require('mailgun-js')({apiKey: process.env.MAILGUN_API_KEY, domain: process.env.MAILGUN_DOMAIN});
 
+/*
+http://api.tvmaze.com/shows/50415/episodesbydate?date=2024-12-01
+*/
+
 const tvMazeBaseUrl = `http://api.tvmaze.com`;
 
 const getAiringToDay = async (id, date) => {
@@ -56,22 +60,42 @@ const getSeriesDetails = async (id) => {
 
 const formatEpisodeAsHtml = async (seriesId, episodeData) => {
 	let seriesDetails = await getSeriesDetails(seriesId);
-	let summay = "";
+	let summary = "";
+
+	// console.log({seriesDetails})
+	// console.log({episodeData})
+
 	
-	if(episodeData.summary) {
-		summy = episodeData.summary;
+	if(episodeData.summary != null) {
+		summary = episodeData.summary;
 	} 
 
 	let html = '';
+	html += `${seriesDetails.name}\r\n`;
 
-	if(seriesDetails !== undefined) {
-		html += `${seriesDetails.name}\r\n`;
-		html += `------------------------\r\n`;
-		html += `#${episodeData.number}: ${summay.trim()}\r\n`
-	} else {
-		html = `There is new episode for ${seriesId}: ${episodeData}, but could not get series details???\r\n`;
+	if(episodeData.season != null) {
+		html += "#S" + episodeData.season;
 	}
 
+	if(episodeData.number != null) {
+		html += "E" + episodeData.number + "\r\n";
+	}
+
+	if(summary != null) {
+			html += summary.trim() + "\r\n"
+	}
+
+	html += `------------------------\r\n`;
+
+	// if(seriesDetails !== undefined) {
+	// 	html += `${seriesDetails.name}\r\n`;
+	// 	html += `------------------------\r\n`;
+	// 	html += `#${episodeData.number}: ${summay.trim()}\r\n`
+	// } else {
+	// 	html = `There is new episode for ${seriesId}: ${episodeData}, but could not get series details???\r\n`;
+	// }
+
+	// console.log({html})
 	return html;
 
 
@@ -88,6 +112,7 @@ const formatEpisodeAsHtml = async (seriesId, episodeData) => {
 
 async function doIt()  {
   const showIds = await fs.readFile('show-ids.txt', 'utf-8');
+	// const showIds = "50415,"
 
 	const limiter = new Bottleneck({
     maxConcurrent: 1,
@@ -99,12 +124,12 @@ async function doIt()  {
   const yesterday = today.subtract(1, 'days');
 	const dateFormat = 'YYYY-MM-DD';
 
+
 	await Promise.all(showIds.split(',').map(async (seriesId) => {
 		const result = await limiter.schedule(async () => {
 			let airingToday = await getAiringToDay(seriesId, today.format(dateFormat));
 
 			if(airingToday !== undefined) {
-				// console.log({airingToday})
 				
 				return await formatEpisodeAsHtml(seriesId, airingToday);
 			}
@@ -119,7 +144,7 @@ async function doIt()  {
 
 		});
 
-		// html += result + '\r\n';
+		html += result; // + '\r\n';
 	}));
 
 	html = html.trim();
