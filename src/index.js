@@ -88,7 +88,7 @@ const formatEpisodeAsHtml = async (seriesId, episodeData) => {
 
 async function doIt()  {
   const showIds = await fs.readFile('show-ids.txt', 'utf-8');
-
+	
 	const limiter = new Bottleneck({
     maxConcurrent: 1,
 		minTime: 333
@@ -104,12 +104,12 @@ async function doIt()  {
 			let airingToday = await getAiringToDay(seriesId, today.format(dateFormat));
 
 			if(airingToday !== undefined) {
-				// console.log({airingToday})
 				
 				return await formatEpisodeAsHtml(seriesId, airingToday);
 			}
-
+			
 			airingToday = await getAiringToDay(seriesId, yesterday.format(dateFormat));
+			// console.log({airingToday})
 
 			if(airingToday !== undefined) {
 				return await formatEpisodeAsHtml(seriesId, airingToday);
