@@ -12,11 +12,11 @@ jobs:
       - name: "Install node"
         uses: actions/setup-node@v1
       - name: "Install npm dependencies"
-        run: npm install
+        run: npm install --force
       - name: "Install npm dependencies request"
-        run: npm install request --save
-      - name: "Install npm dependencies request"
-        run: npm install request-promise --save
+        run: npm install request --force
+      - name: "Install npm dependencies request-promise"
+        run: npm install request-promise --force
       - name: "Run code"
         run: node src/index.js
         env:
