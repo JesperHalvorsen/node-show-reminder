@@ -5,6 +5,7 @@ const path = require('path');
 const jwt = require('jsonwebtoken');
 const moment = require('moment');
 const Bottleneck = require("bottleneck/es5");
+const { TelegramClient } = require('messaging-api-telegram');
 
 // var mailgun = require('mailgun-js')({apiKey: process.env.MAILGUN_API_KEY, domain: process.env.MAILGUN_DOMAIN});
 
@@ -110,7 +111,31 @@ const formatEpisodeAsHtml = async (seriesId, episodeData) => {
 	return html;
 }
 
+const sendTelegramMessage = async (msg) => {
+	const client = new TelegramClient({
+		accessToken: '7532748222:AAGYV2bNx_uiOitnNp40enGeyKgbfmlFWA4',
+	});
+
+	await client.sendMessage('6884382841', msg);
+
+	// 	const TelegramBot = require('node-telegram-bot-api');
+// const token = '7532748222:AAGYV2bNx_uiOitnNp40enGeyKgbfmlFWA4';
+// const bot = new TelegramBot(token, {polling: false});
+
+// await bot.sendMessage('6884382841', html + '\r\n');
+// // await emailResult(html);
+// 		// console.log(html);
+//   } else {
+//     console.log('No shows airing today')
+//   }
+// }
+
+}
+
 async function doIt()  {
+	// await sendTelegramMessage("Testing other package...");
+	// return;
+
   const showIds = await fs.readFile('show-ids.txt', 'utf-8');
 
 	const limiter = new Bottleneck({
@@ -152,17 +177,8 @@ async function doIt()  {
     // html = '<div>' + html + '</div>';
     console.log('Sending email with shows airing today')
 		console.log({html});
-	const TelegramBot = require('node-telegram-bot-api');
-const token = '7532748222:AAGYV2bNx_uiOitnNp40enGeyKgbfmlFWA4';
-const bot = new TelegramBot(token, {polling: false});
 
-await bot.sendMessage('6884382841', html + '\r\n');
-// await emailResult(html);
-		// console.log(html);
-  } else {
-    console.log('No shows airing today')
-  }
-}
+		sendTelegramMessage(html);
 
 // const formatShowAsHtml = (details, show) => {
 //   let html = `<table><tr><td><h1>${details.seriesName}</h1><img src="${details.banner}" /></td></tr>`
@@ -180,7 +196,8 @@ await bot.sendMessage('6884382841', html + '\r\n');
 //   html += '</table>'
 
 //   return html;
-// }
+}
+}
 
 const emailResult = async (body) => {
   const data = {
