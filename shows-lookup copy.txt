@@ -8,10 +8,8 @@
 366090  Treadstone
 365403  Better Call Saul
 317728  The Deuce
-361160  Dracula 
 355838  Lincoln Rhyme: Hunt for the Bone Collector
 359791  Jett
-281617  Empire
 364106  Avenue 5
 364106  curb your enthusiasm
 373228  spy games
@@ -21,8 +19,6 @@
 359581  Stumptown
 359608  briarpatch
 369920  spy wars
-296762  west world
-376752  long way up
 366477  the third day
 387133  Lovecraft Country
 380010  Tehran
@@ -32,7 +28,7 @@
 361002  Utopia
 359583  The Stand
 253573  American Gods
-51394		The.White.Lotus
+51394		The White Lotus
 891			Hard Knocks
 338186	Succession
 53730		Gaslit
@@ -53,3 +49,4 @@
 53777		Landsman
 66840		The Agency
 75030		Paradise
+64028		Dope Theif
