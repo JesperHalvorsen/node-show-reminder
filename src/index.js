@@ -179,6 +179,7 @@ async function doIt()  {
 		console.log({html});
 
 		sendTelegramMessage(html);
+		
 
 // const formatShowAsHtml = (details, show) => {
 //   let html = `<table><tr><td><h1>${details.seriesName}</h1><img src="${details.banner}" /></td></tr>`
